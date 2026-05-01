@@ -3,65 +3,134 @@ package com.example.android_study
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.android_study.ui.theme.AndroidstudyTheme
-
-data class PostData(
-    val userName: String,
-    val location: String,
-    val caption: String,
-    val timeAgo: String,
-    val likes: Int
-)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
         setContent {
-            AndroidstudyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val post = PostData(
-                        userName = "charles_jh04",
-                        location = "Pusan National University",
-                        caption = "스터디 과제 중!",
-                        timeAgo = "3시간 전",
-                        likes = 128
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        FeedCard(post)
+            MainScreen()
+        }
+    }
+}
+
+data class User(val name: String, val age: Int)
+
+@Composable
+fun MainScreen() {
+    // TODO 1. 현재 선택된 탭 상태를 만들어보세요.
+    // 힌트: remember, mutableStateOf 사용
+    var selectedTab by remember { mutableStateOf(0) }
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
+                    label = { Text("홈") }
+                )
+
+                NavigationBarItem(
+                    selected = selectedTab == 1,
+                    // TODO 2. 검색 탭을 누르면 selectedTab이 1이 되도록 작성하세요.
+                    onClick = { selectedTab = 1 },
+                    icon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    label = { Text("검색") }
+                )
+
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    // TODO 3. 마이페이지 탭을 누르면 selectedTab이 2가 되도록 작성하세요.
+                    onClick = { selectedTab = 2 },
+                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    label = { Text("마이") }
+                )
+            }
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            // TODO 4. selectedTab 값에 따라 다른 화면을 보여주세요.
+            when (selectedTab) {
+                0 -> HomeFlowScreen()
+                1 -> SearchScreen()
+                2 -> ProfileScreen()
+            }
+        }
+    }
+}
+
+@Composable
+fun HomeFlowScreen() {
+    // TODO 5. 선택된 사용자를 저장할 상태를 만들어보세요.
+    // 처음에는 아무도 선택되지 않았으므로 null입니다.
+    var selectedUser by remember { mutableStateOf<User?>(null) }
+
+    if (selectedUser == null) {
+        UserListScreen(
+            onClick = { user ->
+                // TODO 6. 클릭한 user를 selectedUser에 저장하세요.
+                selectedUser = user
+            }
+        )
+    } else {
+        UserDetailScreen(
+            user = selectedUser!!,
+            onBack = {
+                // TODO 7. 뒤로가기 버튼을 누르면 다시 목록으로 돌아가도록 null을 넣으세요.
+                selectedUser = null
+            }
+        )
+    }
+}
+
+@Composable
+fun UserListScreen(onClick: (User) -> Unit) {
+    val users = listOf(
+        User("준이", 23),
+        User("준삼", 30),
+        User("준사", 20)
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text("홈 화면", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // TODO 8. 세로 리스트를 만들기 위한 컴포넌트를 작성하세요.
+        LazyColumn {
+            // TODO 9. users 리스트를 하나씩 꺼내 화면에 보여주세요.
+            items(users) { user ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .clickable {
+                            // TODO 10. 카드를 누르면 현재 user를 onClick으로 전달하세요.
+                            onClick(user)
+                        }
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = user.name)
+                        Text(text = "${user.age}세")
                     }
                 }
             }
@@ -70,123 +139,107 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun FeedCard(post: PostData) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+fun UserDetailScreen(user: User, onBack: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text("상세 화면", style = MaterialTheme.typography.headlineMedium)
 
-        // 프로필 행
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // TODO 11. 전달받은 user의 이름과 나이를 출력하세요.
+        Text("이름: ${user.name}")
+        Text("나이: ${user.age}세")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            // TODO 12. 버튼을 누르면 onBack 함수가 실행되게 하세요.
+            onClick = onBack
         ) {
-            // 아바타
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "avatar",
-                modifier = Modifier.size(38.dp),
-                tint = Color.Gray
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column {
-                Text(
-                    text = post.userName,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = post.location,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
+            Text("뒤로가기")
         }
-
-        // 피드 이미지
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .background(Color(0xFFE0E0E0))
-        )
-
-        // 기능 버튼 행
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.FavoriteBorder,
-                contentDescription = "좋아요",
-                modifier = Modifier.size(26.dp)
-            )
-            Spacer(modifier = Modifier.width(14.dp))
-            Icon(
-                imageVector = Icons.Default.Email,
-                contentDescription = "댓글",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(14.dp))
-            Icon(
-                imageVector = Icons.Default.Send,
-                contentDescription = "공유",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = "저장",
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // 좋아요 수
-        Text(
-            text = "좋아요 ${post.likes}개",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(horizontal = 14.dp)
-        )
-
-        // 내용
-        Row(modifier = Modifier.padding(horizontal = 14.dp, vertical = 2.dp)) {
-            Text(
-                text = post.userName,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = post.caption,
-                fontSize = 14.sp
-            )
-        }
-
-        // 시간
-        Text(
-            text = post.timeAgo,
-            fontSize = 11.sp,
-            color = Color.Gray,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
-        )
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    AndroidstudyTheme {
-        FeedCard(
-            PostData(
-                userName = "charlie_jh04,
-                location = "Pusan National University",
-                caption = "스터디 과제 중!",
-                timeAgo = "3시간 전",
-                likes = 128
-            )
+fun SearchScreen() {
+    // TODO 13. 검색어를 저장할 상태를 만들어보세요.
+    var keyword by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text("검색 화면", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            // TODO 14. 현재 검색어 상태를 연결하세요.
+            value = keyword,
+
+            // TODO 15. 입력값이 바뀌면 keyword에 저장하세요.
+            onValueChange = { keyword = it },
+
+            label = { Text("검색어 입력") },
+            modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("입력한 검색어: $keyword")
     }
 }
 
+@Composable
+fun ProfileScreen() {
+    // TODO 16. 좋아요 상태를 만들어보세요.
+    var liked by remember { mutableStateOf(false) }
+
+    // TODO 17. count 상태를 만들어보세요.
+    var count by remember { mutableStateOf(0) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text("마이페이지", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("여기는 마이페이지 탭입니다.")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                // TODO 18. 버튼을 누르면 liked 값이 반대로 바뀌게 하세요.
+                liked = !liked
+            }
+        ) {
+            Text(if (liked) "좋아요 취소" else "좋아요")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                // TODO 19. 버튼을 누르면 count가 1씩 증가하게 하세요.
+                count ++
+            }
+        ) {
+            Text("Count: $count")
+        }
+    }
+
+}
+@Preview()
+@Composable
+fun DefaultPreview() {
+    MainScreen()
+}
